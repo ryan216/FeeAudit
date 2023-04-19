@@ -14,9 +14,6 @@ import com.example.feeauditplatform.utils.R;
  */
 public interface UserService extends IService<User> {
 
-    public R login(User user);
-
-    public R logout();
 
     /** 
      * @description:
@@ -28,11 +25,13 @@ public interface UserService extends IService<User> {
 
 
 
-
-
     public  R getUserInfo(String authorization);
 
 
 
+    public  R changeUserInfo(String authorization,User user);
+
+
+    public  R DeleteUser(String authorization,User user);
 
 }

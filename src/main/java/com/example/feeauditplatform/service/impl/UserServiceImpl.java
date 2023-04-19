@@ -36,27 +36,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
 
     @Override
-    public R login(User user) {
-        String pd=user.getPassword();
-        String username=user.getUsername();
-        User user1 = userMapper.getByName(username );
-        if(user1==null){
-            return new R("用户名不存在，登陆失败",false);
-        }
-        if(!pd.equals(user1.getPassword())){
-            return new R("密码错误，登陆失败",false);
-        }
-        user1.setPassword(null);
-        return new R("登陆成功",user1,true);
-    }
-
-    @Override
-    public R logout() {
-        return null;
-    }
-
-
-    @Override
     public User getByName(String username) {
         return userMapper.getByName(username);
     }
@@ -70,7 +49,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             return new R("token非法",false);
         }
         //解析token
-
         String userid;
         String token = null;
         try {
@@ -84,17 +62,71 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             e.printStackTrace();
             return new R("token非法",false);
         }
-
-//        String redisKey = "login:" + userid;
-//        LoginUser loginUser = redisCache.getCacheObject(redisKey);
-//        User user = loginUser.getUser();
         User user = userMapper.selectById(userid);
-        user.setPassword(null);
+        if(user!=null){
+            user.setPassword(null);
 
-        return new R("用户信息获取成功！",user,true);
+            return new R("用户信息获取成功！",user,true);
+        }
+        return new R("用户信息获取失败！",null,true);
+
     }
 
+    @Override
+    public R changeUserInfo(String authorization, User user) {
+        if (!org.springframework.util.StringUtils.hasText(authorization)) {
+            //放行
+            return new R("token非法",false);
+        }
+        //解析token
+        String userid;
+        String token = null;
+        try {
+            String []tokens=authorization.split(" ");
+            if(tokens.length>1){
+                token = tokens[1];
+            }
+            Claims claims = JwtUtil.parseJWT(token);
+            userid = claims.getSubject();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new R("token非法",false);
+        }
+        int i = userMapper.updateById(user);
+        if(i==1){
+            return new R("用户信息修改成功！",null,true);
+        }
+        return new R("用户信息修改失败！",null,true);
 
+    }
+
+    @Override
+    public R DeleteUser(String authorization, User user) {
+        if (!org.springframework.util.StringUtils.hasText(authorization)) {
+            //放行
+            return new R("token非法",false);
+        }
+        //解析token
+        String userid;
+        String token = null;
+        try {
+            String []tokens=authorization.split(" ");
+            if(tokens.length>1){
+                token = tokens[1];
+            }
+            Claims claims = JwtUtil.parseJWT(token);
+            userid = claims.getSubject();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new R("token非法",false);
+        }
+        int i = userMapper.deleteById(user);
+        if(i==1){
+            return new R("用户删除成功！",null,true);
+        }
+        return new R("用户删除失败！",null,true);
+
+    }
 
 
 }
